@@ -14,7 +14,29 @@ use codex_utils_output_truncation::approx_bytes_for_tokens;
 use tracing::warn;
 
 pub const BASE_INSTRUCTIONS: &str = include_str!("../prompt.md");
+pub const GPT6_CODING_INSTRUCTIONS: &str = include_str!("../gpt6_coding_prompt.md");
 const PERSONALITY_SECTION_HEADER: &str = "# Personality";
+const CATALOG_FORK_TURNS_ALL_DEFAULT_SENTENCE: &str = "With `fork_turns=\"all\"` (the default), the child can see the parent\u{2019}s conversation up to the fork. With `\"none\"`, it starts without that conversation. In either case, the child receives its own role and task.";
+const CATALOG_FORK_TURNS_ALL_DEFAULT_ASCII_SENTENCE: &str = "With `fork_turns=\"all\"` (the default), the child can see the parent's conversation up to the fork. With `\"none\"`, it starts without that conversation. In either case, the child receives its own role and task.";
+const FORK_TURNS_NONE_DEFAULT_SENTENCE: &str = "With `fork_turns=\"none\"` (the default), the child starts with a clean context containing only its role and task—make your task message self-contained (relevant file paths, specs, constraints). Pass `fork_turns=\"all\"` only when the child genuinely needs the full parent conversation.";
+
+fn is_gpt6_coding_model(slug: &str) -> bool {
+    slug.starts_with("gpt-6")
+}
+
+fn rewrite_fork_turns_default_in_role(role_text: &mut String) {
+    if role_text.contains(CATALOG_FORK_TURNS_ALL_DEFAULT_SENTENCE) {
+        *role_text = role_text.replace(
+            CATALOG_FORK_TURNS_ALL_DEFAULT_SENTENCE,
+            FORK_TURNS_NONE_DEFAULT_SENTENCE,
+        );
+    } else if role_text.contains(CATALOG_FORK_TURNS_ALL_DEFAULT_ASCII_SENTENCE) {
+        *role_text = role_text.replace(
+            CATALOG_FORK_TURNS_ALL_DEFAULT_ASCII_SENTENCE,
+            FORK_TURNS_NONE_DEFAULT_SENTENCE,
+        );
+    }
+}
 
 pub fn with_config_overrides(mut model: ModelInfo, config: &ModelsManagerConfig) -> ModelInfo {
     if let Some(context_window) = config.model_context_window {
@@ -41,6 +63,29 @@ pub fn with_config_overrides(mut model: ModelInfo, config: &ModelsManagerConfig)
                 TruncationPolicyConfig::tokens(limit)
             }
         };
+    }
+
+    if is_gpt6_coding_model(&model.slug) {
+        model.node_repl_auto_review_required = false;
+        let model_messages = model.model_messages.get_or_insert_default();
+        model_messages.confirmation_policies = None;
+        model_messages.collaboration_modes = None;
+        model_messages.persistent_instructions = None;
+        if let Some(role) = model_messages
+            .multi_agent
+            .as_mut()
+            .and_then(|multi_agent| multi_agent.role.as_mut())
+        {
+            if let Some(root) = role.root.as_mut() {
+                rewrite_fork_turns_default_in_role(root);
+            }
+            if let Some(subagent) = role.subagent.as_mut() {
+                rewrite_fork_turns_default_in_role(subagent);
+            }
+        }
+        if config.base_instructions.is_none() {
+            model_messages.instructions_template = Some(GPT6_CODING_INSTRUCTIONS.to_string());
+        }
     }
 
     if let Some(base_instructions) = &config.base_instructions {

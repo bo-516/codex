@@ -95,7 +95,15 @@ async fn request_user_input_sets_non_blocking_outside_plan_mode(
     answer: Option<(&str, String)>,
     expected: RenderedVerifiedAnswers,
 ) {
-    let (session, turn, events) = make_session_and_context_with_rx().await;
+    let (session, mut turn, events) = make_session_and_context_with_rx().await;
+    Arc::make_mut(
+        &mut Arc::get_mut(&mut turn)
+            .expect("turn context should be uniquely owned")
+            .config,
+    )
+    .features
+    .enable(codex_features::Feature::GuardianApproval)
+    .expect("enable GuardianApproval for retained answer verification");
     session
         .services
         .thread_extension_data

@@ -324,7 +324,7 @@ fn resize_for_prompt(image: &DynamicImage, mode: PromptImageMode) -> Option<Dyna
     let (width, height) = image.dimensions();
     match mode {
         PromptImageMode::ResizeToFit if width > MAX_DIMENSION || height > MAX_DIMENSION => {
-            Some(image.resize(MAX_DIMENSION, MAX_DIMENSION, FilterType::Triangle))
+            Some(image.resize(MAX_DIMENSION, MAX_DIMENSION, FilterType::CatmullRom))
         }
         PromptImageMode::ResizeWithLimits(limits) => {
             let (target_width, target_height) =
@@ -332,7 +332,7 @@ fn resize_for_prompt(image: &DynamicImage, mode: PromptImageMode) -> Option<Dyna
             if (target_width, target_height) == (width, height) {
                 return None;
             }
-            Some(image.resize_exact(target_width, target_height, FilterType::Triangle))
+            Some(image.resize_exact(target_width, target_height, FilterType::CatmullRom))
         }
         PromptImageMode::ResizeToFit | PromptImageMode::Original => None,
     }

@@ -279,3 +279,86 @@ fn model_context_window_uses_model_value_without_override() {
 
     assert_eq!(updated, model);
 }
+
+#[test]
+fn gpt6_models_inject_streamlined_prompt_strip_confirmation_bloat_and_sync_fork_turns() {
+    let mut model = model_info_from_slug("gpt-6.2-astra");
+    model.node_repl_auto_review_required = true;
+    model.model_messages = Some(ModelMessages {
+        apps: Some(AppsMessages {
+            usage_instructions: Some("Keep Figma connector instructions.".to_string()),
+        }),
+        instructions_template: Some("Bloated remote catalog prompt".to_string()),
+        persistent_instructions: Some("Bloated remote persistent prompt".to_string()),
+        collaboration_modes: Some(CollaborationModeMessages {
+            default: Some("Remote default mode".to_string()),
+            plan: Some("Remote plan mode".to_string()),
+        }),
+        confirmation_policies: Some(ConfirmationPolicies {
+            browser_use: Some("23KB browser policy".to_string()),
+            computer_use: Some("23KB computer policy".to_string()),
+        }),
+        multi_agent: Some(MultiAgentMessages {
+            role: Some(MultiAgentRoleMessages {
+                root: Some(
+                    "Root intro.\nWith `fork_turns=\"all\"` (the default), the child can see the parent\u{2019}s conversation up to the fork. With `\"none\"`, it starts without that conversation. In either case, the child receives its own role and task.\nCommentary footer."
+                        .to_string(),
+                ),
+                subagent: Some(
+                    "Subagent intro.\nWith `fork_turns=\"all\"` (the default), the child can see the parent's conversation up to the fork. With `\"none\"`, it starts without that conversation. In either case, the child receives its own role and task.\nCommentary footer."
+                        .to_string(),
+                ),
+            }),
+            mode: None,
+        }),
+        ..Default::default()
+    });
+
+    let updated = with_config_overrides(model.clone(), &ModelsManagerConfig::default());
+
+    assert!(!updated.node_repl_auto_review_required);
+    assert_eq!(
+        render_model_instructions(&updated),
+        GPT6_CODING_INSTRUCTIONS
+    );
+    let messages = updated.model_messages.as_ref().expect("model messages");
+    assert_eq!(messages.confirmation_policies, None);
+    assert_eq!(messages.collaboration_modes, None);
+    assert_eq!(messages.persistent_instructions, None);
+    assert_eq!(
+        messages
+            .apps
+            .as_ref()
+            .and_then(|apps| apps.usage_instructions.as_deref()),
+        Some("Keep Figma connector instructions.")
+    );
+    let role = messages
+        .multi_agent
+        .as_ref()
+        .and_then(|ma| ma.role.as_ref())
+        .expect("multi_agent role");
+    assert!(
+        role.root
+            .as_deref()
+            .expect("root role")
+            .contains("With `fork_turns=\"none\"` (the default)")
+    );
+    assert!(
+        role.subagent
+            .as_deref()
+            .expect("subagent role")
+            .contains("With `fork_turns=\"none\"` (the default)")
+    );
+
+    let custom_override = with_config_overrides(
+        model,
+        &ModelsManagerConfig {
+            base_instructions: Some("Custom user instructions".to_string()),
+            ..Default::default()
+        },
+    );
+    assert_eq!(
+        render_model_instructions(&custom_override),
+        "Custom user instructions"
+    );
+}

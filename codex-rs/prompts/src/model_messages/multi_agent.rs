@@ -12,7 +12,7 @@ All agents in the team, including the agents that you can assign tasks to, are e
 
 You can use `spawn_agent` to create a new agent, `followup_task` to give an existing agent a new task and trigger a turn, and `send_message` to pass a message to a running agent without triggering a turn.
 Child agents can also spawn their own sub-agents.
-You can decide how much context you want to propagate to your sub-agents with the `fork_turns` parameter.
+With `fork_turns="none"` (the default), child agents start with a clean context containing only their role and task—make your task message self-contained (relevant file paths, specs, constraints). Pass `fork_turns="all"` only when the child genuinely needs the full parent conversation.
 
 You will receive messages in the analysis channel in the form:
 ```
@@ -30,6 +30,7 @@ You can spawn sub-agents to handle subtasks, and those sub-agents can spawn thei
 
 You can use `spawn_agent` to create a new agent, `followup_task` to give an existing agent a new task and trigger a turn, and `send_message` to pass a message to a running agent.
 Child agents can also spawn their own sub-agents.
+With `fork_turns="none"` (the default), child agents start with a clean context containing only their role and task—make your task message self-contained (relevant file paths, specs, constraints). Pass `fork_turns="all"` only when the child genuinely needs the full parent conversation.
 
 When you provide a response in the final channel, that content is immediately delivered back to your parent agent.
 

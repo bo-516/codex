@@ -12834,7 +12834,7 @@ smart_approvals = true
         .build()
         .await?;
 
-    assert!(config.features.enabled(Feature::GuardianApproval));
+    assert!(!config.features.enabled(Feature::GuardianApproval));
     assert_eq!(config.approvals_reviewer, ApprovalsReviewer::User);
 
     let serialized = tokio::fs::read_to_string(codex_home.path().join(CONFIG_TOML_FILE)).await?;

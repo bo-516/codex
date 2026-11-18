@@ -286,8 +286,11 @@ async fn managed_guardian_v1_requirements_disable_guardian_v2() -> Result<()> {
     ] {
         let mut builder = test_codex()
             .with_pre_build_hook(|home| {
-                std::fs::write(home.join("config.toml"), "[features]\nguardianv2 = true\n")
-                    .expect("Guardian v2 configuration should be written");
+                std::fs::write(
+                    home.join("config.toml"),
+                    "[features]\nguardian_approval = true\nguardianv2 = true\n",
+                )
+                .expect("Guardian v2 configuration should be written");
             })
             .with_cloud_config_bundle(
                 CloudConfigBundleFixture::loader_with_enterprise_requirement(requirements),

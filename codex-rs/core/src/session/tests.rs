@@ -10680,7 +10680,8 @@ async fn record_context_updates_use_environment_permission_profile_and_workspace
 
 #[tokio::test]
 async fn record_context_updates_emits_environment_item_for_time_changes() {
-    let (session, previous_context) = make_session_and_context().await;
+    let (session, mut previous_context) = make_session_and_context().await;
+    Arc::make_mut(&mut previous_context.config).include_environment_context_time = true;
     let previous_context = Arc::new(previous_context);
     let mut current_context = previous_context
         .with_model(
