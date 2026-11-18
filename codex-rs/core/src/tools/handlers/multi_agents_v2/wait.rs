@@ -29,6 +29,10 @@ impl ToolExecutor<ToolInvocation> for Handler {
         create_wait_agent_tool_v2(self.options)
     }
 
+    fn supports_parallel_tool_calls(&self) -> bool {
+        true
+    }
+
     fn handle<'a>(&'a self, invocation: ToolInvocation) -> codex_tools::ToolExecutorFuture<'a>
     where
         ToolInvocation: 'a,

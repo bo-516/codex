@@ -1327,9 +1327,7 @@ fn add_shell_tools(context: &CoreToolPlanContext<'_>, registry: &mut ToolRegistr
 
 #[instrument(level = "trace", skip_all)]
 fn add_mcp_resource_tools(context: &CoreToolPlanContext<'_>, registry: &mut ToolRegistry) {
-    if context.mcp.has_servers()
-        || effective_tool_mode(context.turn_context, context.model_info) == ToolMode::CodeModeOnly
-    {
+    if context.mcp.has_servers() {
         let messages = ResolvedModelMessages::from_model(context.model_info).mcp_resources();
         let include_environment_id = context.mcp.config().mcp_server_catalog.exposure()
             == codex_mcp::McpServerExposure::EnvironmentQualified;

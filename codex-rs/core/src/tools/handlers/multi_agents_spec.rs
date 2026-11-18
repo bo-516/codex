@@ -664,7 +664,7 @@ fn spawn_agent_common_properties_v2(agent_type_description: &str) -> BTreeMap<St
         (
             "fork_turns".to_string(),
             JsonSchema::string(Some(
-                "Parent history to inherit. Defaults to `all`; use `none` to start without parent history. Only `all` and `none` are supported.".to_string(),
+                "Parent history to inherit. Defaults to `none` (starts without parent history); use `all` when the child genuinely needs full parent context. Only `none` and `all` are supported.".to_string(),
             )),
         ),
         (

@@ -549,6 +549,7 @@ pub(crate) async fn run_turn(
     // 1. At the start of a turn, so the fresh turn input in `input` gets sampled first.
     // 2. After auto-compact, while a model/tool continuation is pending.
 
+    let mut skip_initial_step_world_state = explicitly_enabled_connectors.is_empty();
     let mut next_step_context = Some(first_step_context);
     let mut guardian_budget_compacted = false;
     let mut unfinished_plan_id = None;
@@ -629,6 +630,8 @@ pub(crate) async fn run_turn(
                 .await?
             }
         };
+        let skip_world_state_rebuild =
+            std::mem::take(&mut skip_initial_step_world_state) && pending_input.is_empty();
         let sampling_request_result: CodexResult<_> = async {
             super::time_reminder::maybe_record_current_time_reminder(
                 sess.as_ref(),
@@ -637,9 +640,11 @@ pub(crate) async fn run_turn(
             )
             .await?;
 
-            world_state = sess
-                .record_step_world_state_if_changed(step_context.as_ref())
-                .await?;
+            if !skip_world_state_rebuild {
+                world_state = sess
+                    .record_step_world_state_if_changed(step_context.as_ref())
+                    .await?;
+            }
 
             // Isolated Guardian reviewers deliberately have no skill catalog.
             if !crate::guardian::is_basic_session_source(&turn_context.session_source) {

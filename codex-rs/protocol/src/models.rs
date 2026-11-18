@@ -2499,8 +2499,32 @@ impl CallToolResult {
         if let Some(structured_content) = &self.structured_content
             && !structured_content.is_null()
         {
+            let has_media_items = content_items.iter().any(|item| {
+                matches!(
+                    item,
+                    FunctionCallOutputContentItem::InputImage { .. }
+                        | FunctionCallOutputContentItem::InputAudio { .. }
+                )
+            });
             match serde_json::to_string(structured_content) {
                 Ok(serialized_structured_content) => {
+                    if has_media_items {
+                        let mut combined = Vec::with_capacity(1 + content_items.len());
+                        combined.push(FunctionCallOutputContentItem::InputText {
+                            text: serialized_structured_content,
+                        });
+                        combined.extend(content_items.into_iter().filter(|item| {
+                            matches!(
+                                item,
+                                FunctionCallOutputContentItem::InputImage { .. }
+                                    | FunctionCallOutputContentItem::InputAudio { .. }
+                            )
+                        }));
+                        return FunctionCallOutputPayload {
+                            body: FunctionCallOutputBody::ContentItems(combined),
+                            success: Some(self.success()),
+                        };
+                    }
                     return FunctionCallOutputPayload {
                         body: FunctionCallOutputBody::Text(serialized_structured_content),
                         success: Some(self.success()),
@@ -3538,6 +3562,37 @@ mod tests {
                 body: FunctionCallOutputBody::Text(
                     serde_json::json!({"result":"structured"}).to_string(),
                 ),
+                success: Some(true),
+            }
+        );
+    }
+
+    #[test]
+    fn preserves_structured_mcp_content_and_image_items() {
+        let call_tool_result = CallToolResult {
+            content: vec![
+                serde_json::json!({"type":"text","text":"ignored duplicate text"}),
+                serde_json::json!({"type":"image","data":"BASE64","mimeType":"image/png"}),
+            ],
+            structured_content: Some(serde_json::json!({"nodeId":"12:34","tokens":{"gap":8}})),
+            is_error: Some(false),
+            meta: None,
+        };
+
+        assert_eq!(
+            call_tool_result.as_function_call_output_payload(),
+            FunctionCallOutputPayload {
+                body: FunctionCallOutputBody::ContentItems(vec![
+                    FunctionCallOutputContentItem::InputText {
+                        text: serde_json::json!({"nodeId":"12:34","tokens":{"gap":8}}).to_string(),
+                    },
+                    FunctionCallOutputContentItem::InputImage {
+                        image: ImageReference::Inline {
+                            image_url: "data:image/png;base64,BASE64".to_string(),
+                        },
+                        detail: Some(DEFAULT_IMAGE_DETAIL),
+                    },
+                ]),
                 success: Some(true),
             }
         );

@@ -1366,14 +1366,14 @@ pub const FEATURES: &[FeatureSpec] = &[
     FeatureSpec {
         id: Feature::CodeModePrewarm,
         key: "code_mode_prewarm",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::RestoredHistoryPrewarm,
         key: "restored_history_prewarm",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::CodeModeInterrupt,
@@ -1722,8 +1722,8 @@ pub const FEATURES: &[FeatureSpec] = &[
     FeatureSpec {
         id: Feature::DeferMailboxPreemption,
         key: "defer_mailbox_preemption",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::WakeOnAgentMessages,
@@ -1794,8 +1794,8 @@ pub const FEATURES: &[FeatureSpec] = &[
     FeatureSpec {
         id: Feature::McpConnectionSharing,
         key: "mcp_connection_sharing",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::McpSharedReplCwd,
@@ -1806,8 +1806,8 @@ pub const FEATURES: &[FeatureSpec] = &[
     FeatureSpec {
         id: Feature::McpLazyStdioStartup,
         key: "mcp_lazy_stdio_startup",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::MultiEnvironmentMcp,
@@ -1902,8 +1902,8 @@ pub const FEATURES: &[FeatureSpec] = &[
     FeatureSpec {
         id: Feature::IncrementalExecTools,
         key: "incremental_exec_tools",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::NonPrefixedMcpToolNames,
@@ -1921,7 +1921,7 @@ pub const FEATURES: &[FeatureSpec] = &[
         id: Feature::ToolSuggest,
         key: "tool_suggest",
         stage: Stage::Stable,
-        default_enabled: true,
+        default_enabled: false,
     },
     FeatureSpec {
         id: Feature::RecommendedPlugins,
@@ -2082,8 +2082,8 @@ pub const FEATURES: &[FeatureSpec] = &[
     FeatureSpec {
         id: Feature::ImageResizeNotice,
         key: "image_resize_notice",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::UnifiedImageBudget,
@@ -2191,7 +2191,7 @@ pub const FEATURES: &[FeatureSpec] = &[
         id: Feature::GuardianApproval,
         key: "guardian_approval",
         stage: Stage::Stable,
-        default_enabled: true,
+        default_enabled: false,
     },
     FeatureSpec {
         id: Feature::GuardianIncludeAdditionalContext,
@@ -2472,8 +2472,8 @@ pub const FEATURES: &[FeatureSpec] = &[
     FeatureSpec {
         id: Feature::AsyncCompaction,
         key: "async_compaction",
-        stage: Stage::UnderDevelopment,
-        default_enabled: false,
+        stage: Stage::Stable,
+        default_enabled: true,
     },
     FeatureSpec {
         id: Feature::AsyncCompactionRootOnly,

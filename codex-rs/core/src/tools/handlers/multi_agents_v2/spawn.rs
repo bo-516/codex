@@ -41,6 +41,10 @@ impl ToolExecutor<ToolInvocation> for Handler {
         create_spawn_agent_tool_v2(self.options.clone(), self.description_override.as_deref())
     }
 
+    fn supports_parallel_tool_calls(&self) -> bool {
+        true
+    }
+
     fn handle<'a>(&'a self, invocation: ToolInvocation) -> codex_tools::ToolExecutorFuture<'a>
     where
         ToolInvocation: 'a,
@@ -223,7 +227,7 @@ impl SpawnAgentArgs {
             .as_deref()
             .map(str::trim)
             .filter(|fork_turns| !fork_turns.is_empty())
-            .unwrap_or("all");
+            .unwrap_or("none");
 
         if fork_turns.eq_ignore_ascii_case("none") {
             return Ok(None);

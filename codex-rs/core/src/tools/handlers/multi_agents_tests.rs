@@ -910,7 +910,8 @@ async fn multi_agent_v2_full_history_fork_inherits_root_service_tier() {
             "spawn_agent",
             function_payload(json!({
                 "message": "inspect this repo",
-                "task_name": "fork_with_tier"
+                "task_name": "fork_with_tier",
+                "fork_turns": "all"
             })),
         ))
         .await
@@ -970,12 +971,11 @@ async fn multi_agent_v2_spawn_without_history_allows_agent_type_override() {
             function_payload(json!({
                 "message": "inspect this repo",
                 "task_name": "fresh_agent",
-                "agent_type": role_name,
-                "fork_turns": "none"
+                "agent_type": role_name
             })),
         ))
         .await
-        .expect("fresh agent should allow agent_type overrides");
+        .expect("omitting fork_turns should default to none and allow agent_type overrides");
     let (content, _) = expect_text_output(output);
     let result: serde_json::Value =
         serde_json::from_str(&content).expect("spawn_agent result should be json");
